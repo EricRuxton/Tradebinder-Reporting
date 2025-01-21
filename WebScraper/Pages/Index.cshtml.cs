@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using HtmlAgilityPack;
 using System.Text;
 using Newtonsoft.Json.Linq;
-//using MySql.Data.MySqlClient;
+using MySqlConnector;
+
 
 namespace WebScraper.Pages
 {
@@ -17,7 +18,7 @@ namespace WebScraper.Pages
             _logger = logger;
         }
 
-        public void OnGet()
+        public async void OnGet()
         {
             string url = "https://scryfall.com/docs/api/bulk-data";
             string response = CallUrl(url).Result;
@@ -35,28 +36,50 @@ namespace WebScraper.Pages
                 readContents = streamReader.ReadToEnd();
                 importedCards = JToken.Parse(readContents);
             }
-            /*
-                foreach (JToken item in importedCards)
-                {
-                    ["id"]
-                    ["name"]
-                    ["type_line"]
-                    ["set_name"]
-                    ["set"]
-                    ["prices"]["usd"]
-                    ["prices"]["usd_foil"]
-                    ["colors"]
-                    ["color_identity"]
-                    ["cmc"]
-                    ["rarity"]
-                    ["uri"]
-                    ["image_uris"]["large"]
-                    ["finishes"]
-                    ["lang"]
-                    ["collector_number"]
-                }
-            */
+            using var connection = new MySqlConnection("Server=localhost;User ID=root;Password=root;Database=tradebinder");
 
+            await connection.OpenAsync();
+           
+            using var openCommand = new MySqlCommand("USE tradebinder", connection);
+            using var openCommandReader = await openCommand.ExecuteReaderAsync();
+            openCommandReader.Close();
+
+            foreach (JToken item in importedCards)
+            {
+                string checkExistsCommand = $"SELECT * FROM tradebinder.card WHERE scryfallId = 'tset';";
+                using var checkExistsCommandReader= await new MySqlCommand(checkExistsCommand, connection).ExecuteReaderAsync();
+
+                string commandString;
+
+                if (checkExistsCommandReader.HasRows)
+                {
+                    string insertCommandString = $"INSERT INTO card " +
+                        $"(scryfallId, name, cardType, setName, setCode, flatValue, foilValue, color, colorIdentity, " +
+                        $"cmc, rarity, cardUri, artUri, finishes, language, collectorNumber) " +
+                        $"VALUES('{item["id"]}', '{item["name"]}', '{item["type_line"]}', '{item["set_name"]}', " +
+                        $"'{item["set"]}', '{item["prices"]["usd"]}','{item["prices"]["usd_foil"]}', '{item["colors"]}', '{item["color_identity"]}', " +
+                        $"'{item["cmc"]}', '{item["rarity"]}', '{item["uri"]}', '{item["image_uris"]["large"]}', '{item["finishes"]}', '{item["lang"]}', " +
+                        $"'{item["collector_number"]}');";
+
+                    commandString = insertCommandString;
+                }
+                else
+                {
+                    string updateCommandString = $"UPDATE card " +
+                        $"SET name = '{item["name"]}', cardType = '{item["type_line"]}'," +
+                        $"setName = '{item["set_name"]}', setCode = '{item["set"]}', flatValue = '{item["prices"]["usd"]}'," +
+                        $"foilValue = '{item["prices"]["usd_foil"]}', color = '{item["colors"]}', colorIdentity = '{item["color_identity"]}', " +
+                        $"cmc = '{item["cmc"]}', rarity = '{item["rarity"]}', cardUri = '{item["uri"]}', artUri = '{item["image_uris"]["large"]}', " +
+                        $" finishes = '{item["finishes"]}', language = '{item["lang"]}', collectorNumber = '{item["collector_number"]}' " +
+                        $"WHERE scryfallId = '{item["id"]}';";
+
+                    commandString = updateCommandString;
+                }
+                checkExistsCommandReader.Close();
+                string escapedSqlCommandString =  MySqlHelper.EscapeString(commandString);
+                using var reader = await new MySqlCommand(escapedSqlCommandString, connection).ExecuteReaderAsync();
+                reader.Close();
+            }
         }
 
         private static async Task<string> CallUrl(string fullUrl)
