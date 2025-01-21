@@ -46,8 +46,8 @@ namespace WebScraper.Pages
 
             foreach (JToken item in importedCards)
             {
-                string checkExistsCommand = $"SELECT * FROM tradebinder.card WHERE scryfallId = 'tset';";
-                using var checkExistsCommandReader= await new MySqlCommand(checkExistsCommand, connection).ExecuteReaderAsync();
+                string checkExistsCommand = $"SELECT * FROM tradebinder.card WHERE scryfallId = '{item["id"]}';";
+                using var checkExistsCommandReader = await new MySqlCommand(checkExistsCommand, connection).ExecuteReaderAsync();
 
                 string commandString;
 
