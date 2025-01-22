@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "1XKPEQ7adC8UWgdua9smlJwKPW3yNxQP7c2jSKdmemE=",
+  "Source": "TradeBinder-CRON",
+  "BasePath": "_content/TradeBinder-CRON",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
