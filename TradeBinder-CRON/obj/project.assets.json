@@ -1337,11 +1337,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Personal\\repos\\TradeBinder\\TradeBinder-CRON\\TradeBinder-CRON\\TradeBinder-CRON.csproj",
+      "projectUniqueName": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\TradeBinder-CRON.csproj",
       "projectName": "TradeBinder-CRON",
-      "projectPath": "D:\\Personal\\repos\\TradeBinder\\TradeBinder-CRON\\TradeBinder-CRON\\TradeBinder-CRON.csproj",
+      "projectPath": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\TradeBinder-CRON.csproj",
       "packagesPath": "C:\\Users\\eruxt\\.nuget\\packages\\",
-      "outputPath": "D:\\Personal\\repos\\TradeBinder\\TradeBinder-CRON\\TradeBinder-CRON\\obj\\",
+      "outputPath": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

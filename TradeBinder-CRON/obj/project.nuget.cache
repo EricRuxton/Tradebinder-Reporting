@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "tiTbqIW7RJc=",
+  "dgSpecHash": "1NBF+gSa/KY=",
   "success": true,
-  "projectFilePath": "D:\\Personal\\repos\\TradeBinder\\TradeBinder-CRON\\TradeBinder-CRON\\TradeBinder-CRON.csproj",
+  "projectFilePath": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\TradeBinder-CRON.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\eruxt\\.nuget\\packages\\htmlagilitypack\\1.11.72\\htmlagilitypack.1.11.72.nupkg.sha512",
     "C:\\Users\\eruxt\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.12\\microsoft.aspnetcore.openapi.8.0.12.nupkg.sha512",
