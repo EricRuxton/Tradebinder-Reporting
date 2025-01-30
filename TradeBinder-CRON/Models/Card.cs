@@ -3,45 +3,54 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TradeBinder_CRON.Models
 {
-    [Index("scryfallId", IsUnique = true)]
-    public class Card
+    [Index("ScryfallId", IsUnique = true)]
+    public partial class Card
     {
+        public Card()
+        {
+            CollectionCards = new HashSet<CollectionCard>();
+            WishlistCards = new HashSet<WishlistCard>();
+        }
+
         [Key]
-        public int id { get; set; }
+        public int Id { get; set; }
 
-        public string scryfallId { get; set; }
+        public required string ScryfallId { get; set; }
 
-        public string name { get; set; }
+        public required string Name { get; set; }
 
-        public string cardType { get; set; }
+        public required string CardType { get; set; }
 
-        public string setName { get; set; }
+        public required string SetName { get; set; }
 
-        public string color { get; set; }
+        public required string Color { get; set; }
 
-        public string colorIdentity { get; set; }
+        public required string ColorIdentity { get; set; }
 
-        public int cmc { get; set; }
+        public int CMC { get; set; }
 
-        public double? flatValue { get; set; }
+        public double? FlatValue { get; set; }
 
-        public double? foilValue { get; set; }
+        public double? FoilValue { get; set; }
 
-        public double? etchedValue { get; set; }
+        public double? EtchedValue { get; set; }
 
-        public string cardUri { get; set; }
+        public required string CardUri { get; set; }
 
-        public string artUri { get; set; }
+        public required string ArtUri { get; set; }
 
-        public string setCode { get; set; }
+        public required string SetCode { get; set; }
 
-        public string finishes { get; set; }
+        public required string Finishes { get; set; }
 
-        public string language { get; set; }
+        public required string Language { get; set; }
 
-        public string collectorNumber { get; set; }
+        public required string CollectorNumber { get; set; }
 
-        public string rarity { get; set; }
+        public required string Rarity { get; set; }
 
+        public virtual ICollection<CollectionCard> CollectionCards { get; set; }
+
+        public virtual ICollection<WishlistCard> WishlistCards { get; set; }
     }
 }

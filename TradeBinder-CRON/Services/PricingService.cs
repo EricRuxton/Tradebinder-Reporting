@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
@@ -11,9 +10,8 @@ namespace TradeBinder_CRON.Services
     {
         private Timer? _timer;
         private readonly DailyPriceData _dailyPriceData;
-        private HttpClient _httpClient;
-        private HtmlDocument _htmlDocument;
-        private TradeBinderContext _tbContext;
+        private readonly HttpClient _httpClient;
+        private readonly DailyReportingService _drs;
 
         public PricingService(DailyPriceData priceData)
         {
@@ -24,31 +22,33 @@ namespace TradeBinder_CRON.Services
             _httpClient = new();
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
 
-            //Initialize HTML parser
-            _htmlDocument = new();
+            _drs = new DailyReportingService();
 
-            _tbContext = new();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(UpdatePricingData, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+            _timer = new Timer(UpdatePricingData, null, TimeSpan.Zero, TimeSpan.FromHours(24));
             return Task.CompletedTask;
         }
 
         private async void UpdatePricingData(object? state)
         {
+            _drs.GenerateReports(_dailyPriceData);
+            return;
             DateTime startTime = DateTime.Now;
             System.Diagnostics.Debug.WriteLine("Start time: " + startTime.ToLongTimeString());
 
+            _dailyPriceData.PriceData.Clear();
+
             // Load existing card IDs from the database
             Dictionary<string, int> existingCardIDs;
-            using (var tbContext = new TradeBinderContext())
+            using (TradeBinderContext tbContext = new TradeBinderContext())
             {
                 existingCardIDs = await tbContext.Card
                     .AsNoTracking()
-                    .Select(c => new { c.id, c.scryfallId })
-                    .ToDictionaryAsync(c => c.scryfallId, c => c.id);
+                    .Select(c => new { c.Id, c.ScryfallId })
+                    .ToDictionaryAsync(c => c.ScryfallId, c => c.Id);
             }
 
             var newCards = new List<Card>();
@@ -69,16 +69,16 @@ namespace TradeBinder_CRON.Services
                 {
                     if (jsonReader.TokenType == JsonToken.StartObject)
                     {
-                        var cardJson = JObject.Load(jsonReader);
+                        JObject cardJson = JObject.Load(jsonReader);
                         double? foilValue = ParseNullableDouble(cardJson["prices"]!["usd"]);
                         double? flatValue = ParseNullableDouble(cardJson["prices"]!["usd_foil"]);
                         double? etchedValue = ParseNullableDouble(cardJson["prices"]!["usd_etched"]);
 
                         // Filter and skip unwanted cards
-                        if (cardJson["layout"]?.Value<string>() == "double_faced_token" ||
-                            cardJson["layout"]?.Value<string>() == "art_series" ||
-                            string.Join(",", cardJson["games"]!) == "mtgo" ||
-                            string.Join(",", cardJson["games"]!) == "arena" ||
+                        if (cardJson["layout"]!.Value<string>()!.Equals("double_faced_token") ||
+                            cardJson["layout"]!.Value<string>()!.Equals("art_series") ||
+                            string.Join(",", cardJson["games"]!).Equals("mtgo") ||
+                            string.Join(",", cardJson["games"]!).Equals("arena") ||
                             (foilValue == null && flatValue == null && etchedValue == null)
                         )
                         {
@@ -105,29 +105,31 @@ namespace TradeBinder_CRON.Services
             }
 
             // Batch insert and update to the database
-            using (var tbContext = new TradeBinderContext())
+            using (TradeBinderContext tbContext = new TradeBinderContext())
             {
                 const int dbBatchSize = 1000;
 
                 // Insert new cards in batches
                 for (int i = 0; i < newCards.Count; i += dbBatchSize)
                 {
-                    var batch = newCards.Skip(i).Take(dbBatchSize).ToList();
-                    await tbContext.Card.AddRangeAsync(batch.Distinct());
+                    List<Card> batch = newCards.Distinct().Skip(i).Take(dbBatchSize).ToList();
+                    await tbContext.Card.AddRangeAsync(batch);
                     await tbContext.SaveChangesAsync();
                 }
 
                 // Update existing cards in batches
                 for (int i = 0; i < existingCards.Count; i += dbBatchSize)
                 {
-                    var batch = existingCards.Skip(i).Take(dbBatchSize).ToList();
-                    tbContext.Card.UpdateRange(batch.Distinct());
+                    List<Card> batch = existingCards.Distinct().Skip(i).Take(dbBatchSize).ToList();
+                    tbContext.Card.UpdateRange(batch);
                     await tbContext.SaveChangesAsync();
                 }
             }
 
             System.Diagnostics.Debug.WriteLine("End time: " + DateTime.Now.ToLongTimeString());
             System.Diagnostics.Debug.WriteLine($"Execution Time: {(DateTime.Now - startTime).TotalSeconds} seconds");
+
+
         }
 
         private void ProcessBatch(
@@ -136,14 +138,15 @@ namespace TradeBinder_CRON.Services
             List<Card> newCards,
             List<Card> existingCards)
         {
-            foreach (var cardJson in batch)
+            foreach (JToken cardJson in batch)
             {
-                var card = CreateCardFromJson(cardJson);
+                Card card = CreateCardFromJson(cardJson);
 
-                if (existingCardIDs.TryGetValue(card.scryfallId, out int existingId))
+                if (existingCardIDs.TryGetValue(card.ScryfallId, out int existingId))
                 {
-                    card.id = existingId; // Set the existing ID for updates
+                    card.Id = existingId; // Set the existing ID for updates
                     existingCards.Add(card);
+                    _dailyPriceData.PriceData.Add(card);
                 }
                 else
                 {
@@ -168,37 +171,28 @@ namespace TradeBinder_CRON.Services
             var response = await httpClient.GetStringAsync(fullUrl);
             return response;
         }
-        private string GetAllCardsUrl(string html)
-        {
-            _htmlDocument.LoadHtml(html);
-
-            return _htmlDocument.DocumentNode.Descendants("a")
-                .Where(node => node.GetAttributeValue("href", "").Contains("oracle-cards"))
-                .First().GetAttributeValue("href", "");
-
-        }
 
         private Card CreateCardFromJson(JToken scryfallCard)
         {
             return new Card
             {
-                scryfallId = scryfallCard["id"]!.Value<string>()!,
-                name = scryfallCard["name"]!.Value<string>()!,
-                cardType = scryfallCard["type_line"] != null ? scryfallCard["type_line"]!.Value<string>()! : scryfallCard["card_faces"]![0]!["type_line"]!.Value<string>()!,
-                setName = scryfallCard["set_name"]!.Value<string>()!,
-                color = scryfallCard["colors"] != null ? String.Join(",", scryfallCard["colors"]!) : String.Join(",", String.Join(",", scryfallCard["card_faces"]![0]!["colors"]!), String.Join(",", scryfallCard["card_faces"]![1]!["colors"]!).Distinct()),
-                colorIdentity = String.Join(",", scryfallCard["color_identity"]!),
-                cmc = scryfallCard["cmc"] != null ? scryfallCard["cmc"]!.Value<int>()! : scryfallCard["card_faces"]![0]!["cmc"]!.Value<int>()!,
-                flatValue = ParseNullableDouble(scryfallCard["prices"]?["usd"]),
-                foilValue = ParseNullableDouble(scryfallCard["prices"]?["usd_foil"]),
-                etchedValue = ParseNullableDouble(scryfallCard["prices"]?["usd_etched"]),
-                cardUri = scryfallCard["image_uris"] != null ? scryfallCard["image_uris"]!["small"]!.Value<string>()! : scryfallCard["card_faces"]![0]!["image_uris"]!["small"]!.Value<string>()!,
-                artUri = scryfallCard["image_uris"] != null ? scryfallCard["image_uris"]!["art_crop"]!.Value<string>()! : scryfallCard["card_faces"]![0]!["image_uris"]!["art_crop"]!.Value<string>()!,
-                setCode = scryfallCard["set"]!.Value<string>()!,
-                finishes = String.Join(",", scryfallCard["finishes"]!),
-                language = scryfallCard["lang"]!.Value<string>()!,
-                collectorNumber = scryfallCard["collector_number"]!.Value<string>()!,
-                rarity = scryfallCard["rarity"]!.Value<string>()!
+                ScryfallId = scryfallCard["id"]!.Value<string>()!,
+                Name = scryfallCard["name"]!.Value<string>()!,
+                CardType = scryfallCard["type_line"] != null ? scryfallCard["type_line"]!.Value<string>()! : scryfallCard["card_faces"]![0]!["type_line"]!.Value<string>()!,
+                SetName = scryfallCard["set_name"]!.Value<string>()!,
+                Color = scryfallCard["colors"] != null ? String.Join(",", scryfallCard["colors"]!) : String.Join(",", String.Join(",", scryfallCard["card_faces"]![0]!["colors"]!), String.Join(",", scryfallCard["card_faces"]![1]!["colors"]!).Distinct()),
+                ColorIdentity = String.Join(",", scryfallCard["color_identity"]!),
+                CMC = scryfallCard["cmc"] != null ? scryfallCard["cmc"]!.Value<int>()! : scryfallCard["card_faces"]![0]!["cmc"]!.Value<int>()!,
+                FlatValue = ParseNullableDouble(scryfallCard["prices"]?["usd"]),
+                FoilValue = ParseNullableDouble(scryfallCard["prices"]?["usd_foil"]),
+                EtchedValue = ParseNullableDouble(scryfallCard["prices"]?["usd_etched"]),
+                CardUri = scryfallCard["image_uris"] != null ? scryfallCard["image_uris"]!["small"]!.Value<string>()! : scryfallCard["card_faces"]![0]!["image_uris"]!["small"]!.Value<string>()!,
+                ArtUri = scryfallCard["image_uris"] != null ? scryfallCard["image_uris"]!["art_crop"]!.Value<string>()! : scryfallCard["card_faces"]![0]!["image_uris"]!["art_crop"]!.Value<string>()!,
+                SetCode = scryfallCard["set"]!.Value<string>()!,
+                Finishes = String.Join(",", scryfallCard["finishes"]!),
+                Language = scryfallCard["lang"]!.Value<string>()!,
+                CollectorNumber = scryfallCard["collector_number"]!.Value<string>()!,
+                Rarity = scryfallCard["rarity"]!.Value<string>()!
             };
         }
 

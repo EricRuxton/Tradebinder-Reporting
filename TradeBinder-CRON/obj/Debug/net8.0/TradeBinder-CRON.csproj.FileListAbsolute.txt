@@ -94,5 +94,3 @@ D:\Personal\repos\TradeBinder\tradebinder-reporting\TradeBinder-CRON\obj\Debug\n
 D:\Personal\repos\TradeBinder\tradebinder-reporting\TradeBinder-CRON\obj\Debug\net8.0\TradeBinder-CRON.pdb
 D:\Personal\repos\TradeBinder\tradebinder-reporting\TradeBinder-CRON\obj\Debug\net8.0\TradeBinder-CRON.genruntimeconfig.cache
 D:\Personal\repos\TradeBinder\tradebinder-reporting\TradeBinder-CRON\obj\Debug\net8.0\ref\TradeBinder-CRON.dll
-D:\Personal\repos\TradeBinder\tradebinder-reporting\TradeBinder-CRON\bin\Debug\net8.0\default-cards-20250123100915.json
-D:\Personal\repos\TradeBinder\tradebinder-reporting\TradeBinder-CRON\bin\Debug\net8.0\all-cards-20250121102112.json
