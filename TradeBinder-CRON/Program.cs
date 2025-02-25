@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<DailyPriceData>();
-builder.Services.AddHostedService<PricingService>();
+builder.Services.AddHostedService<SchedulingService>();
 
 
 var app = builder.Build();

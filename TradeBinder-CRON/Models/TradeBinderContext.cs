@@ -105,6 +105,7 @@ namespace TradeBinder_CRON.Models
                 entity.Property(cc => cc.CollectionId).HasColumnName("collectionId");
                 entity.Property(cc => cc.CardId).HasColumnName("cardId");
                 entity.Property(cc => cc.Tradeable).HasColumnName("tradeable");
+                entity.Property(cc => cc.Finish).HasColumnName("finish");
                 entity.HasOne(cc => cc.Collection).WithMany(c => c.CollectionCards).HasForeignKey(cc => cc.CollectionId).HasConstraintName("FK_f626e7047eee12f78d0b0b0a9b3");
                 entity.HasOne(cc => cc.Card).WithMany(c => c.CollectionCards).HasForeignKey(cc => cc.CardId).HasConstraintName("FK_b09001b379829c0ceed0b59e299");
             });

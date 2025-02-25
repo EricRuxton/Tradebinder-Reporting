@@ -6,14 +6,13 @@ using TradeBinder_CRON.Models;
 
 namespace TradeBinder_CRON.Services
 {
-    public class PricingService : IHostedService, IDisposable
+    public class DailyPricingService
     {
-        private Timer? _timer;
         private readonly DailyPriceData _dailyPriceData;
         private readonly HttpClient _httpClient;
-        private readonly DailyReportingService _drs;
+        private readonly DailyReportingService _dailyReportingService;
 
-        public PricingService(DailyPriceData priceData)
+        public DailyPricingService(DailyPriceData priceData)
         {
             //Pull in pricing data
             _dailyPriceData = priceData;
@@ -22,21 +21,13 @@ namespace TradeBinder_CRON.Services
             _httpClient = new();
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
 
-            _drs = new DailyReportingService();
-
+            _dailyReportingService = new DailyReportingService(_dailyPriceData);
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async void UpdateGlobalPricingInfo()
         {
-            _timer = new Timer(UpdatePricingData, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-            return Task.CompletedTask;
-        }
-
-        private async void UpdatePricingData(object? state)
-        {
-            _drs.GenerateReports(_dailyPriceData);
-            return;
             DateTime startTime = DateTime.Now;
+            System.Diagnostics.Debug.WriteLine("Starting DailyPricingService");
             System.Diagnostics.Debug.WriteLine("Start time: " + startTime.ToLongTimeString());
 
             _dailyPriceData.PriceData.Clear();
@@ -126,9 +117,10 @@ namespace TradeBinder_CRON.Services
                 }
             }
 
-            System.Diagnostics.Debug.WriteLine("End time: " + DateTime.Now.ToLongTimeString());
+            System.Diagnostics.Debug.WriteLine("DailyPriceService end time: " + DateTime.Now.ToLongTimeString());
             System.Diagnostics.Debug.WriteLine($"Execution Time: {(DateTime.Now - startTime).TotalSeconds} seconds");
 
+            await _dailyReportingService.GenerateReports(_dailyPriceData);
 
         }
 
@@ -136,7 +128,8 @@ namespace TradeBinder_CRON.Services
             JArray batch,
             Dictionary<string, int> existingCardIDs,
             List<Card> newCards,
-            List<Card> existingCards)
+            List<Card> existingCards
+            )
         {
             foreach (JToken cardJson in batch)
             {
@@ -153,23 +146,6 @@ namespace TradeBinder_CRON.Services
                     newCards.Add(card);
                 }
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _timer?.Change(Timeout.Infinite, 0);
-            return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-            _timer?.Dispose();
-        }
-
-        private static async Task<string> CallUrl(string fullUrl, HttpClient httpClient)
-        {
-            var response = await httpClient.GetStringAsync(fullUrl);
-            return response;
         }
 
         private Card CreateCardFromJson(JToken scryfallCard)
@@ -194,6 +170,12 @@ namespace TradeBinder_CRON.Services
                 CollectorNumber = scryfallCard["collector_number"]!.Value<string>()!,
                 Rarity = scryfallCard["rarity"]!.Value<string>()!
             };
+        }
+
+        private static async Task<string> CallUrl(string fullUrl, HttpClient httpClient)
+        {
+            var response = await httpClient.GetStringAsync(fullUrl);
+            return response;
         }
 
         private static double? ParseNullableDouble(JToken? token)

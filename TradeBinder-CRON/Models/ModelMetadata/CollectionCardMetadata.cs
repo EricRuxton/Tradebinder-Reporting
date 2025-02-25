@@ -1,6 +1,14 @@
-﻿namespace TradeBinder_CRON.Models
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace TradeBinder_CRON.Models
 {
+    [ModelMetadataType(typeof(CollectionCardMetadata))]
     public partial class CollectionCard
+    {
+        public double Value => (double)(Finish == "flat" ? Card.FlatValue : Finish == "foil" ? Card.FoilValue : Card.EtchedValue)!;
+    }
+
+    public class CollectionCardMetadata
     {
         public int Id { get; set; }
         public required bool Tradeable { get; set; }
