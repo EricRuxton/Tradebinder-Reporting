@@ -3,16 +3,20 @@
   "WorkspaceRootPath": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|d:\\personal\\repos\\tradebinder\\tradebinder-reporting\\tradebinder-cron\\services\\schedulingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|solutionrelative:tradebinder-cron\\services\\schedulingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|d:\\personal\\repos\\tradebinder\\tradebinder-reporting\\tradebinder-cron\\services\\dailypricingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|solutionrelative:tradebinder-cron\\services\\dailypricingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|d:\\personal\\repos\\tradebinder\\tradebinder-reporting\\tradebinder-cron\\services\\dailyreportingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|solutionrelative:tradebinder-cron\\services\\dailyreportingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|d:\\personal\\repos\\tradebinder\\tradebinder-reporting\\tradebinder-cron\\models\\reportcard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|solutionrelative:tradebinder-cron\\models\\reportcard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|d:\\personal\\repos\\tradebinder\\tradebinder-reporting\\tradebinder-cron\\models\\report.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0C39C86-982A-4C04-A809-DAD96368D57B}|TradeBinder-CRON\\TradeBinder-CRON.csproj|solutionrelative:tradebinder-cron\\models\\report.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -27,38 +31,51 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "SchedulingService.cs",
-              "DocumentMoniker": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Services\\SchedulingService.cs",
-              "RelativeDocumentMoniker": "TradeBinder-CRON\\Services\\SchedulingService.cs",
-              "ToolTip": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Services\\SchedulingService.cs",
-              "RelativeToolTip": "TradeBinder-CRON\\Services\\SchedulingService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAABDAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-25T02:35:39.87Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "DailyPricingService.cs",
               "DocumentMoniker": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Services\\DailyPricingService.cs",
               "RelativeDocumentMoniker": "TradeBinder-CRON\\Services\\DailyPricingService.cs",
               "ToolTip": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Services\\DailyPricingService.cs",
               "RelativeToolTip": "TradeBinder-CRON\\Services\\DailyPricingService.cs",
-              "ViewState": "AgIAAIYAAAAAAAAAAAAwwAwAAABGAAAAAAAAAA==",
+              "ViewState": "AgIAALYAAAAAAAAAAAA4wDcAAABnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-25T01:53:58.714Z",
+              "WhenOpened": "2025-02-26T01:47:23.362Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "ReportCard.cs",
+              "DocumentMoniker": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Models\\ReportCard.cs",
+              "RelativeDocumentMoniker": "TradeBinder-CRON\\Models\\ReportCard.cs",
+              "ToolTip": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Models\\ReportCard.cs",
+              "RelativeToolTip": "TradeBinder-CRON\\Models\\ReportCard.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-25T23:09:40.339Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Report.cs",
+              "DocumentMoniker": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Models\\Report.cs",
+              "RelativeDocumentMoniker": "TradeBinder-CRON\\Models\\Report.cs",
+              "ToolTip": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Models\\Report.cs",
+              "RelativeToolTip": "TradeBinder-CRON\\Models\\Report.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-25T22:50:10.189Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "DailyReportingService.cs",
               "DocumentMoniker": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Services\\DailyReportingService.cs",
               "RelativeDocumentMoniker": "TradeBinder-CRON\\Services\\DailyReportingService.cs",
               "ToolTip": "D:\\Personal\\repos\\TradeBinder\\tradebinder-reporting\\TradeBinder-CRON\\Services\\DailyReportingService.cs",
               "RelativeToolTip": "TradeBinder-CRON\\Services\\DailyReportingService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAABAAAAAAAAAAAAAowB0AAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-25T01:31:27.775Z",
               "EditorCaption": ""

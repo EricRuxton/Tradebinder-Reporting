@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TradeBinder-CRON")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd61fac3df7a306f10cde173401c9ddfb854b84f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+95a1ef2f4f529b261878c51418b99ac99268c13b")]
 [assembly: System.Reflection.AssemblyProductAttribute("TradeBinder-CRON")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TradeBinder-CRON")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

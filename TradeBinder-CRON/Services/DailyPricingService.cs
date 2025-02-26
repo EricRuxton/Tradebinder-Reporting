@@ -42,19 +42,21 @@ namespace TradeBinder_CRON.Services
                     .ToDictionaryAsync(c => c.ScryfallId, c => c.Id);
             }
 
-            var newCards = new List<Card>();
-            var existingCards = new List<Card>();
+            const int batchSize = 1000;
+            List<Task> processingTasks = new();
 
             //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/all-cards", _httpClient));
-            JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/oracle-cards", _httpClient));
+            //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/default-cards", _httpClient));
+            //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/oracle-cards", _httpClient));
+
+
 
             // Download JSON from the URL
-            using (var responseStream = await _httpClient.GetStreamAsync(bulkInfoResponse["download_uri"]!.Value<string>()!))
-            using (var streamReader = new StreamReader(responseStream, Encoding.UTF8))
+            //using (var responseStream = await _httpClient.GetStreamAsync(bulkInfoResponse["download_uri"]!.Value<string>()!))
+            using (var streamReader = new StreamReader("C:\\Users\\eruxt\\Downloads\\default-cards-20250225100806.json", Encoding.UTF8))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
-                JArray currentBatch = new();
-                var batchSize = 1000;
+                JArray currentBatch = [];
 
                 while (jsonReader.Read())
                 {
@@ -82,7 +84,10 @@ namespace TradeBinder_CRON.Services
                         // Process batch when it reaches the batch size
                         if (currentBatch.Count >= batchSize)
                         {
-                            ProcessBatch(currentBatch, existingCardIDs, newCards, existingCards);
+                            // Process the batch asynchronously
+                            var batchToProcess = new JArray(currentBatch);
+                            processingTasks.Add(Task.Run(() => ProcessBatchAsync(batchToProcess, existingCardIDs)));
+
                             currentBatch.Clear();
                         }
                     }
@@ -91,31 +96,12 @@ namespace TradeBinder_CRON.Services
                 // Process any remaining cards
                 if (currentBatch.Count > 0)
                 {
-                    ProcessBatch(currentBatch, existingCardIDs, newCards, existingCards);
+                    await ProcessBatchAsync(currentBatch, existingCardIDs);
                 }
             }
 
-            // Batch insert and update to the database
-            using (TradeBinderContext tbContext = new TradeBinderContext())
-            {
-                const int dbBatchSize = 1000;
-
-                // Insert new cards in batches
-                for (int i = 0; i < newCards.Count; i += dbBatchSize)
-                {
-                    List<Card> batch = newCards.Distinct().Skip(i).Take(dbBatchSize).ToList();
-                    await tbContext.Card.AddRangeAsync(batch);
-                    await tbContext.SaveChangesAsync();
-                }
-
-                // Update existing cards in batches
-                for (int i = 0; i < existingCards.Count; i += dbBatchSize)
-                {
-                    List<Card> batch = existingCards.Distinct().Skip(i).Take(dbBatchSize).ToList();
-                    tbContext.Card.UpdateRange(batch);
-                    await tbContext.SaveChangesAsync();
-                }
-            }
+            // Wait for all batch processing to complete
+            await Task.WhenAll(processingTasks);
 
             System.Diagnostics.Debug.WriteLine("DailyPriceService end time: " + DateTime.Now.ToLongTimeString());
             System.Diagnostics.Debug.WriteLine($"Execution Time: {(DateTime.Now - startTime).TotalSeconds} seconds");
@@ -124,28 +110,44 @@ namespace TradeBinder_CRON.Services
 
         }
 
-        private void ProcessBatch(
-            JArray batch,
-            Dictionary<string, int> existingCardIDs,
-            List<Card> newCards,
-            List<Card> existingCards
-            )
+        private async Task ProcessBatchAsync(JArray batch, Dictionary<string, int> existingCardIDs)
         {
-            foreach (JToken cardJson in batch)
+            List<Card> newCards = new();
+            List<Card> existingCards = new();
+
+            foreach (var cardJson in batch)
             {
                 Card card = CreateCardFromJson(cardJson);
 
                 if (existingCardIDs.TryGetValue(card.ScryfallId, out int existingId))
                 {
-                    card.Id = existingId; // Set the existing ID for updates
+                    card.Id = existingId;
                     existingCards.Add(card);
-                    _dailyPriceData.PriceData.Add(card);
                 }
                 else
                 {
                     newCards.Add(card);
                 }
             }
+
+            // Batch insert/update
+            using var tbContext = new TradeBinderContext();
+            const int dbBatchSize = 1000;
+
+            // Insert new cards in parallel
+            for (int i = 0; i < newCards.Count; i += dbBatchSize)
+            {
+                var batchToInsert = newCards.Skip(i).Take(dbBatchSize).ToList();
+                await tbContext.Card.AddRangeAsync(batchToInsert);
+            }
+
+            // Update existing cards in parallel
+            for (int i = 0; i < existingCards.Count; i += dbBatchSize)
+            {
+                var batchToUpdate = existingCards.Skip(i).Take(dbBatchSize).ToList();
+                tbContext.Card.UpdateRange(batchToUpdate);
+            }
+            await tbContext.SaveChangesAsync();
         }
 
         private Card CreateCardFromJson(JToken scryfallCard)
