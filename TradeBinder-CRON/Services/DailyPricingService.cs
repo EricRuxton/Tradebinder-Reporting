@@ -84,10 +84,8 @@ namespace TradeBinder_CRON.Services
                         // Process batch when it reaches the batch size
                         if (currentBatch.Count >= batchSize)
                         {
-                            // Process the batch asynchronously
                             var batchToProcess = new JArray(currentBatch);
                             processingTasks.Add(Task.Run(() => ProcessBatchAsync(batchToProcess, existingCardIDs)));
-
                             currentBatch.Clear();
                         }
                     }
@@ -96,7 +94,9 @@ namespace TradeBinder_CRON.Services
                 // Process any remaining cards
                 if (currentBatch.Count > 0)
                 {
-                    await ProcessBatchAsync(currentBatch, existingCardIDs);
+                    var batchToProcess = new JArray(currentBatch);
+                    processingTasks.Add(Task.Run(() => ProcessBatchAsync(batchToProcess, existingCardIDs)));
+                    currentBatch.Clear();
                 }
             }
 
@@ -128,6 +128,7 @@ namespace TradeBinder_CRON.Services
                 {
                     newCards.Add(card);
                 }
+                _dailyPriceData.PriceData.Add(card);
             }
 
             // Batch insert/update

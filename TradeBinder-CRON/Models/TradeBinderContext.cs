@@ -13,6 +13,9 @@ namespace TradeBinder_CRON.Models
         public DbSet<Tradebinder> Tradebinder { get; set; }
         public DbSet<CollectionCard> CollectionCard { get; set; }
         public DbSet<WishlistCard> WishlistCard { get; set; }
+        public DbSet<Report> Report { get; set; }
+        public DbSet<ReportCard> ReportCard { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -122,6 +125,34 @@ namespace TradeBinder_CRON.Models
                 entity.Property(wc => wc.Foil).HasColumnName("foil");
                 entity.HasOne(wc => wc.Wishlist).WithMany(w => w.WishlistCards).HasForeignKey(wc => wc.WishlistId).HasConstraintName("FK_b42a2f4b513d7e8fec2d9779afe");
                 entity.HasOne(wc => wc.Card).WithMany(c => c.WishlistCards).HasForeignKey(wc => wc.CardId).HasConstraintName("FK_9788f6c09c78435e8a1cb75a663");
+            });
+
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.ToTable("report");
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Id).ValueGeneratedOnAdd();
+                entity.Property(r => r.Id).HasColumnName("id");
+                entity.Property(r => r.Value).HasColumnName("value");
+                entity.Property(r => r.UserId).HasColumnName("userId");
+                entity.Property(r => r.CreatedDate).HasColumnName("createdDate");
+                entity.Property(r => r.Type).HasColumnName("type");
+                entity.HasOne(r => r.User).WithMany(u => u.Reports).HasForeignKey(r => r.UserId).HasConstraintName("REL_e347c56b008c2057c9887e230a");
+            });
+
+            modelBuilder.Entity<ReportCard>(entity =>
+            {
+                entity.ToTable("report_card");
+                entity.HasKey(rc => rc.Id);
+                entity.Property(rc => rc.Id).ValueGeneratedOnAdd();
+                entity.Property(rc => rc.Id).HasColumnName("id");
+                entity.Property(rc => rc.ValuePerCard).HasColumnName("valuePerCard");
+                entity.Property(rc => rc.Finish).HasColumnName("finish");
+                entity.Property(rc => rc.Quantity).HasColumnName("quantity");
+                entity.Property(rc => rc.ReportId).HasColumnName("reportId");
+                entity.Property(rc => rc.CardId).HasColumnName("cardId");
+                entity.HasOne(rc => rc.Card).WithMany(c => c.ReportCards).HasForeignKey(r => r.CardId).HasConstraintName("FK_0e6a086350c6517abdbc9ee966c");
+                entity.HasOne(rc => rc.Report).WithMany(r => r.ReportCards).HasForeignKey(r => r.ReportId).HasConstraintName("FK_a3865c6406cc603417bd644d977");
             });
         }
     }

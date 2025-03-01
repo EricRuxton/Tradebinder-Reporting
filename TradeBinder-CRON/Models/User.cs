@@ -4,6 +4,11 @@ namespace TradeBinder_CRON.Models
 {
     public partial class User
     {
+
+        public User()
+        {
+            Reports = new HashSet<Report>();
+        }
         [Key]
         public int Id { get; set; }
         public required string Username { get; set; }
@@ -16,5 +21,7 @@ namespace TradeBinder_CRON.Models
         public required virtual Wishlist Wishlist { get; set; }
         public required virtual Tradebinder Tradebinder { get; set; }
         public required virtual Collection Collection { get; set; }
+        public virtual ICollection<Report> Reports { get; set; }
+
     }
 }

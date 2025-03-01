@@ -10,6 +10,7 @@ namespace TradeBinder_CRON.Models
         {
             CollectionCards = new HashSet<CollectionCard>();
             WishlistCards = new HashSet<WishlistCard>();
+            ReportCards = new HashSet<ReportCard>();
         }
 
         [Key]
@@ -52,5 +53,7 @@ namespace TradeBinder_CRON.Models
         public virtual ICollection<CollectionCard> CollectionCards { get; set; }
 
         public virtual ICollection<WishlistCard> WishlistCards { get; set; }
+
+        public virtual ICollection<ReportCard> ReportCards { get; set; }
     }
 }
