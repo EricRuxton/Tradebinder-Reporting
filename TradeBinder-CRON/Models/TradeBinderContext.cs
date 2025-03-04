@@ -136,7 +136,10 @@ namespace TradeBinder_CRON.Models
                 entity.Property(r => r.Value).HasColumnName("value");
                 entity.Property(r => r.UserId).HasColumnName("userId");
                 entity.Property(r => r.CreatedDate).HasColumnName("createdDate");
-                entity.Property(r => r.Type).HasColumnName("type");
+                entity.Property(r => r.CollectionSize).HasColumnName("collectionSize");
+                entity.Property(r => r.IsDaily).HasColumnName("isDaily");
+                entity.Property(r => r.IsWeekly).HasColumnName("isWeekly");
+                entity.Property(r => r.IsMonthly).HasColumnName("isMonthly");
                 entity.HasOne(r => r.User).WithMany(u => u.Reports).HasForeignKey(r => r.UserId).HasConstraintName("REL_e347c56b008c2057c9887e230a");
             });
 

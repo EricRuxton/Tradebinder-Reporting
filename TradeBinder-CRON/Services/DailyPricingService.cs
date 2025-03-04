@@ -46,14 +46,14 @@ namespace TradeBinder_CRON.Services
             List<Task> processingTasks = new();
 
             //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/all-cards", _httpClient));
-            //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/default-cards", _httpClient));
+            JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/default-cards", _httpClient));
             //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/oracle-cards", _httpClient));
 
 
 
             // Download JSON from the URL
-            //using (var responseStream = await _httpClient.GetStreamAsync(bulkInfoResponse["download_uri"]!.Value<string>()!))
-            using (var streamReader = new StreamReader("C:\\Users\\eruxt\\Downloads\\default-cards-20250225100806.json", Encoding.UTF8))
+            using (var responseStream = await _httpClient.GetStreamAsync(bulkInfoResponse["download_uri"]!.Value<string>()!))
+            using (var streamReader = new StreamReader(responseStream, Encoding.UTF8))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
                 JArray currentBatch = [];
@@ -107,7 +107,6 @@ namespace TradeBinder_CRON.Services
             System.Diagnostics.Debug.WriteLine($"Execution Time: {(DateTime.Now - startTime).TotalSeconds} seconds");
 
             await _dailyReportingService.GenerateReports(_dailyPriceData);
-
         }
 
         private async Task ProcessBatchAsync(JArray batch, Dictionary<string, int> existingCardIDs)

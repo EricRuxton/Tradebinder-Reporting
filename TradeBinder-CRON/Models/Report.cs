@@ -14,8 +14,12 @@ namespace TradeBinder_CRON.Models
 
         public required double Value { get; set; }
         public required int UserId { get; set; }
-        public required DateTime CreatedDate { get; set; }
-        public required String Type { get; set; }
+        public required String CreatedDate { get; set; }
+        public required bool IsDaily { get; set; }
+        public required bool IsWeekly { get; set; }
+        public required bool IsMonthly { get; set; }
+
+        public required int CollectionSize { get; set; }
 
         public required virtual User User { get; set; }
         public virtual ICollection<ReportCard> ReportCards { get; set; }
