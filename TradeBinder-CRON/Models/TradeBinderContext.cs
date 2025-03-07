@@ -6,6 +6,7 @@ namespace TradeBinder_CRON.Models
     {
         static readonly string connectionString = "Server=localhost; User ID=root; Password=root; Database=Tradebinder; AllowLoadLocalInfile=true";
 
+
         public DbSet<Card> Card { get; set; }
         public DbSet<User> User { get; set; }
         public DbSet<Collection> Collection { get; set; }

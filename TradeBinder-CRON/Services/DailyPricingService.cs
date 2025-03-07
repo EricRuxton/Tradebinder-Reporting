@@ -46,10 +46,6 @@ namespace TradeBinder_CRON.Services
             List<Task> processingTasks = new();
 
             JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/all-cards", _httpClient));
-            //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/default-cards", _httpClient));
-            //JToken bulkInfoResponse = JToken.Parse(await CallUrl("https://api.scryfall.com/bulk-data/oracle-cards", _httpClient));
-
-
 
             // Download JSON from the URL
             using (var responseStream = await _httpClient.GetStreamAsync(bulkInfoResponse["download_uri"]!.Value<string>()!))

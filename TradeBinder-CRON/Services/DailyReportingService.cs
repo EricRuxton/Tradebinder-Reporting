@@ -31,7 +31,9 @@ namespace TradeBinder_CRON.Services
             {
                 if (users[userIndex].Collection!.CollectionCards.Count > 0)
                 {
-                    List<ReportCard> userReportCards = [];
+                    List<ReportCard> userCollectionReportCards = [];
+                    List<ReportCard> userTradebinderReportCards = [];
+
                     Report collectionReport = new()
                     {
                         CreatedDate = DateTime.Now.Date.ToShortDateString(),
@@ -42,7 +44,7 @@ namespace TradeBinder_CRON.Services
                         IsDaily = true,
                         IsWeekly = DateTime.Now.DayOfWeek == DayOfWeek.Sunday,
                         IsMonthly = DateTime.Now.Day == 1,
-                        Type = "Collection"
+                        Type = "collection"
                     };
                     Report tradebinderReport = new()
                     {
@@ -54,13 +56,10 @@ namespace TradeBinder_CRON.Services
                         IsDaily = true,
                         IsWeekly = DateTime.Now.DayOfWeek == DayOfWeek.Sunday,
                         IsMonthly = DateTime.Now.Day == 1,
-                        Type = "Tradebinder"
+                        Type = "tradebinder"
                     };
                     foreach (CollectionCard collectionCard in users[userIndex].Collection!.CollectionCards)
                     {
-                        CollectionCard tempCollectionCard = collectionCard;
-                        Console.WriteLine(tempCollectionCard.CardId);
-
                         Card priceCard = _dailyPriceData.PriceData.First(dpc => dpc.Id == collectionCard.CardId);
                         //memoization
                         ReportCard? existingReportCard = _dailyReportCards.FirstOrDefault(rc => rc?.CardId == collectionCard.CardId && rc?.Finish == collectionCard.Finish, null);
@@ -69,14 +68,14 @@ namespace TradeBinder_CRON.Services
                             existingReportCard = GenerateReportCard(priceCard, collectionCard);
                             _dailyReportCards.Add(existingReportCard);
                         }
-                        ReportCard? userReportCard = userReportCards.FirstOrDefault(rc => rc?.CardId == existingReportCard.CardId && rc?.Finish == existingReportCard.Finish, null);
-                        if (userReportCard == null)
+                        ReportCard? userCollectionReportCard = userCollectionReportCards.FirstOrDefault(rc => rc?.CardId == existingReportCard.CardId && rc?.Finish == existingReportCard.Finish, null);
+                        if (userCollectionReportCard == null)
                         {
-                            userReportCards.Add(new() { ValuePerCard = existingReportCard.ValuePerCard, Finish = existingReportCard.Finish, Quantity = 1, CardId = existingReportCard.CardId, Tradeable = collectionCard.Tradeable });
+                            userCollectionReportCards.Add(new() { ValuePerCard = existingReportCard.ValuePerCard, Finish = existingReportCard.Finish, Quantity = 1, CardId = existingReportCard.CardId, Tradeable = collectionCard.Tradeable });
                         }
                         else
                         {
-                            userReportCard.Quantity++;
+                            userCollectionReportCard.Quantity++;
                         }
                         collectionReport.Value += existingReportCard.ValuePerCard;
                         collectionReport.CollectionSize++;
@@ -84,12 +83,22 @@ namespace TradeBinder_CRON.Services
                         //logic for tradebinder report
                         if ((decimal)existingReportCard.ValuePerCard > users[userIndex].Tradebinder!.Threshold && collectionCard.Tradeable)
                         {
+                            //duplicate code block to above, requires refactor
+                            ReportCard? userTradebinderReportCard = userTradebinderReportCards.FirstOrDefault(rc => rc?.CardId == existingReportCard.CardId && rc?.Finish == existingReportCard.Finish, null);
+                            if (userTradebinderReportCard == null)
+                            {
+                                userTradebinderReportCards.Add(new() { ValuePerCard = existingReportCard.ValuePerCard, Finish = existingReportCard.Finish, Quantity = 1, CardId = existingReportCard.CardId, Tradeable = collectionCard.Tradeable });
+                            }
+                            else
+                            {
+                                userTradebinderReportCard.Quantity++;
+                            }
                             tradebinderReport.Value += existingReportCard.ValuePerCard;
                             tradebinderReport.CollectionSize++;
                         }
                     }
-                    collectionReport.ReportCards = userReportCards;
-                    tradebinderReport.ReportCards = userReportCards.Where(rc => (decimal)rc.ValuePerCard >= users[userIndex].Tradebinder!.Threshold && rc.Tradeable).ToList();
+                    collectionReport.ReportCards = userCollectionReportCards;
+                    tradebinderReport.ReportCards = userTradebinderReportCards;
                     reports.Add(collectionReport);
                     reports.Add(tradebinderReport);
                 }
