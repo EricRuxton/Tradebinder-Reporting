@@ -14,13 +14,13 @@ namespace TradeBinder_CRON.Models
         public required string Username { get; set; }
         public required string Email { get; set; }
         public bool Verified { get; set; }
-        public required int CollectionId { get; set; }
-        public required int TradebinderId { get; set; }
-        public required int WishlistId { get; set; }
+        public int? CollectionId { get; set; }
+        public int? TradebinderId { get; set; }
+        public int? WishlistId { get; set; }
 
-        public required virtual Wishlist Wishlist { get; set; }
-        public required virtual Tradebinder Tradebinder { get; set; }
-        public required virtual Collection Collection { get; set; }
+        public virtual Wishlist? Wishlist { get; set; }
+        public virtual Tradebinder? Tradebinder { get; set; }
+        public virtual Collection? Collection { get; set; }
         public virtual ICollection<Report> Reports { get; set; }
 
     }

@@ -18,6 +18,7 @@ namespace TradeBinder_CRON.Models
         public required bool IsDaily { get; set; }
         public required bool IsWeekly { get; set; }
         public required bool IsMonthly { get; set; }
+        public required string Type { get; set; }
 
         public required int CollectionSize { get; set; }
 

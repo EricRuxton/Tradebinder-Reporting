@@ -12,38 +12,55 @@ namespace TradeBinder_CRON.Services
             _dailyPriceData = priceData;
             _dailyReportCards = [];
         }
-        public async Task<Collection[]> GenerateReports(DailyPriceData priceData)
+        public async Task<User[]> GenerateReports()
         {
             DateTime startTime = DateTime.Now;
             System.Diagnostics.Debug.WriteLine("Starting DailyReportingService");
             System.Diagnostics.Debug.WriteLine("Start time: " + startTime.ToLongTimeString());
             TradeBinderContext dbContext = new();
-            Collection[] collections = await dbContext.Collection
-                .Include(c => c.User)
-                .Include(c => c.CollectionCards)
-                .Where(c => c.User.Verified == true)
+            User[] users = await dbContext.User
+                .Include(u => u.Collection)
+                .Include(u => u.Collection!.CollectionCards)
+                .Include(u => u.Tradebinder)
+                .Where(u => u.Verified == true && u.Collection != null && u.Tradebinder != null)
                 .ToArrayAsync();
 
-            List<Report> userReports = [];
+            List<Report> reports = [];
 
-            for (int collectionIndex = 0; collectionIndex < collections.Length; collectionIndex++)
+            for (int userIndex = 0; userIndex < users.Length; userIndex++)
             {
-                if (collections[collectionIndex].CollectionCards.Count() > 0)
+                if (users[userIndex].Collection!.CollectionCards.Count > 0)
                 {
                     List<ReportCard> userReportCards = [];
-                    Report userReport = new()
+                    Report collectionReport = new()
                     {
                         CreatedDate = DateTime.Now.Date.ToShortDateString(),
                         Value = 0,
-                        User = collections[collectionIndex].User,
-                        UserId = collections[collectionIndex].User.Id,
+                        User = users[userIndex],
+                        UserId = users[userIndex].Id,
                         CollectionSize = 0,
                         IsDaily = true,
                         IsWeekly = DateTime.Now.DayOfWeek == DayOfWeek.Sunday,
-                        IsMonthly = DateTime.Now.Day == 1
+                        IsMonthly = DateTime.Now.Day == 1,
+                        Type = "Collection"
                     };
-                    foreach (CollectionCard collectionCard in collections[collectionIndex].CollectionCards)
+                    Report tradebinderReport = new()
                     {
+                        CreatedDate = DateTime.Now.Date.ToShortDateString(),
+                        Value = 0,
+                        User = users[userIndex],
+                        UserId = users[userIndex].Id,
+                        CollectionSize = 0,
+                        IsDaily = true,
+                        IsWeekly = DateTime.Now.DayOfWeek == DayOfWeek.Sunday,
+                        IsMonthly = DateTime.Now.Day == 1,
+                        Type = "Tradebinder"
+                    };
+                    foreach (CollectionCard collectionCard in users[userIndex].Collection!.CollectionCards)
+                    {
+                        CollectionCard tempCollectionCard = collectionCard;
+                        Console.WriteLine(tempCollectionCard.CardId);
+
                         Card priceCard = _dailyPriceData.PriceData.First(dpc => dpc.Id == collectionCard.CardId);
                         //memoization
                         ReportCard? existingReportCard = _dailyReportCards.FirstOrDefault(rc => rc?.CardId == collectionCard.CardId && rc?.Finish == collectionCard.Finish, null);
@@ -55,27 +72,36 @@ namespace TradeBinder_CRON.Services
                         ReportCard? userReportCard = userReportCards.FirstOrDefault(rc => rc?.CardId == existingReportCard.CardId && rc?.Finish == existingReportCard.Finish, null);
                         if (userReportCard == null)
                         {
-                            userReportCards.Add(new() { ValuePerCard = existingReportCard.ValuePerCard, Finish = existingReportCard.Finish, Quantity = 1, CardId = existingReportCard.CardId });
+                            userReportCards.Add(new() { ValuePerCard = existingReportCard.ValuePerCard, Finish = existingReportCard.Finish, Quantity = 1, CardId = existingReportCard.CardId, Tradeable = collectionCard.Tradeable });
                         }
                         else
                         {
                             userReportCard.Quantity++;
                         }
-                        userReport.Value += existingReportCard.ValuePerCard;
-                        userReport.CollectionSize++;
+                        collectionReport.Value += existingReportCard.ValuePerCard;
+                        collectionReport.CollectionSize++;
+
+                        //logic for tradebinder report
+                        if ((decimal)existingReportCard.ValuePerCard > users[userIndex].Tradebinder!.Threshold && collectionCard.Tradeable)
+                        {
+                            tradebinderReport.Value += existingReportCard.ValuePerCard;
+                            tradebinderReport.CollectionSize++;
+                        }
                     }
-                    userReport.ReportCards = userReportCards;
-                    userReports.Add(userReport);
+                    collectionReport.ReportCards = userReportCards;
+                    tradebinderReport.ReportCards = userReportCards.Where(rc => (decimal)rc.ValuePerCard >= users[userIndex].Tradebinder!.Threshold && rc.Tradeable).ToList();
+                    reports.Add(collectionReport);
+                    reports.Add(tradebinderReport);
                 }
             }
-            if (userReports.Count > 0)
+            if (reports.Count > 0)
             {
-                await dbContext.AddRangeAsync(userReports);
+                await dbContext.AddRangeAsync(reports);
                 await dbContext.SaveChangesAsync();
             }
             System.Diagnostics.Debug.WriteLine("DailyPriceService end time: " + DateTime.Now.ToLongTimeString());
             System.Diagnostics.Debug.WriteLine($"Execution Time: {(DateTime.Now - startTime).TotalSeconds} seconds");
-            return collections;
+            return users;
         }
 
         private static ReportCard GenerateReportCard(Card priceCard, CollectionCard collectionCard)

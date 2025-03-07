@@ -4,7 +4,7 @@ namespace TradeBinder_CRON.Models
 {
     public class TradeBinderContext : DbContext
     {
-        static readonly string connectionString = "Server=localhost; User ID=root; Password=root; Database=tradebinder; AllowLoadLocalInfile=true";
+        static readonly string connectionString = "Server=localhost; User ID=root; Password=root; Database=Tradebinder; AllowLoadLocalInfile=true";
 
         public DbSet<Card> Card { get; set; }
         public DbSet<User> User { get; set; }
@@ -140,6 +140,7 @@ namespace TradeBinder_CRON.Models
                 entity.Property(r => r.IsDaily).HasColumnName("isDaily");
                 entity.Property(r => r.IsWeekly).HasColumnName("isWeekly");
                 entity.Property(r => r.IsMonthly).HasColumnName("isMonthly");
+                entity.Property(r => r.Type).HasColumnName("type");
                 entity.HasOne(r => r.User).WithMany(u => u.Reports).HasForeignKey(r => r.UserId).HasConstraintName("REL_e347c56b008c2057c9887e230a");
             });
 
